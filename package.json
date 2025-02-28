@@ -1,6 +1,6 @@
 {
   "name": "md-to-cn-word",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "将Markdown转换为符合中国大陆地区惯用的初始风格的Word文档",
   "main": "src/module.js",
   "type": "module",
