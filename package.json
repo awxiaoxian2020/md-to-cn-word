@@ -8,16 +8,24 @@
     "md-to-cn-word": "./src/index.js"
   },
   "exports": {
-    ".": "./src/module.js"
+    ".": {
+      "import": "./src/module.js",
+      "browser": "./src/browser.js"
+    },
+    "./extension": "./src/extension.js"
   },
+  "browser": "./src/browser.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "build": "rollup -c",
+    "build:extension": "rollup -c --environment BUILD:extension"
   },
   "keywords": [
     "markdown",
     "docx",
     "converter",
-    "chinese-style"
+    "chinese-style",
+    "browser-extension"
   ],
   "author": "Xavi Lee",
   "homepage": "https://github.com/awxiaoxian2020/md-to-cn-word",
@@ -28,5 +36,10 @@
     "inline-css": "^4.0.3",
     "jsdom": "^26.0.0",
     "showdown": "^2.1.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rollup": "^4.9.6",
+    "rollup-plugin-terser": "^7.0.2"
   }
 }

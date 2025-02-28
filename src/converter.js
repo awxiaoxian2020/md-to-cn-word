@@ -1,26 +1,50 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import showdown from 'showdown';
 import { JSDOM } from 'jsdom';
 import HTMLtoDOCX from 'html-to-docx';
 import inlineCss from 'inline-css';
 
-// 获取当前文件的目录路径
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 检测环境
+const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+
+// 仅在Node环境中导入fs和path
+let fs = null, path = null, __dirname = null;
+if (isNode) {
+  // 使用try-catch包装动态导入，以便在浏览器扩展中不会报错
+  try {
+    const fsModule = require('fs');
+    const pathModule = require('path');
+    const urlModule = require('url');
+    
+    fs = fsModule;
+    path = pathModule;
+    
+    const __filename = urlModule.fileURLToPath(import.meta.url);
+    __dirname = pathModule.dirname(__filename);
+  } catch (e) {
+    console.warn('文件系统模块导入失败，将禁用文件操作功能', e);
+  }
+}
+
+// 内置的minireset.css，避免依赖文件系统
+const miniresetCSS = `/*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */
+html,body,p,ol,ul,li,dl,dt,dd,blockquote,figure,fieldset,legend,textarea,pre,iframe,hr,h1,h2,h3,h4,h5,h6{margin:0;padding:0}
+h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal}
+ul{list-style:none}
+button,input,select{margin:0}
+html{box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+img,video{height:auto;max-width:100%}
+iframe{border:0}
+table{border-collapse:collapse;border-spacing:0}
+td,th{padding:0}`;
 
 /**
  * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的HTML
  * @param {string} markdownContent - Markdown内容
- * @param {string} [outputPath] - 可选，输出的HTML文件路径
+ * @param {string} [outputPath] - 可选，输出的HTML文件路径（仅Node环境有效）
  * @returns {Promise<string>} 返回HTML内容
  */
 export async function markdownToHtml(markdownContent, outputPath = null) {
-  // 读取minireset.css文件
-  const miniresetPath = path.join(__dirname, 'lib', 'minireset.css');
-  const miniresetCSS = fs.readFileSync(miniresetPath, 'utf-8');
-  
   // 第一步：将Markdown转换为HTML
   const converter = new showdown.Converter({
     tables: true,
@@ -101,10 +125,14 @@ export async function markdownToHtml(markdownContent, outputPath = null) {
   // 将样式转换为内联样式
   const finalHtml = await inlineCss(rawHtml, { url: 'file://' });
   
-  // 如果提供了输出路径，则保存HTML文件
-  if (outputPath) {
-    fs.writeFileSync(outputPath, finalHtml);
-    console.log(`HTML文件已保存为 "${outputPath}"`);
+  // 如果提供了输出路径且在Node环境中，则保存HTML文件
+  if (outputPath && isNode && fs) {
+    try {
+      fs.writeFileSync(outputPath, finalHtml);
+      console.log(`HTML文件已保存为 "${outputPath}"`);
+    } catch (e) {
+      console.error('保存HTML文件失败:', e);
+    }
   }
   
   return finalHtml;
@@ -113,9 +141,9 @@ export async function markdownToHtml(markdownContent, outputPath = null) {
 /**
  * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的Word文档
  * @param {string} markdownContent - Markdown内容
- * @param {string} outputPath - 输出的Word文档路径
+ * @param {string} [outputPath] - 输出的Word文档路径（仅Node环境有效）
  * @param {Object} options - 转换选项
- * @param {boolean} [options.generateHtml=false] - 是否生成HTML文件
+ * @param {boolean} [options.generateHtml=false] - 是否生成HTML文件（仅Node环境有效）
  * @returns {Promise<{docxBuffer: Buffer, htmlContent: string}>} 返回docx缓冲区和HTML内容
  */
 export async function markdownToDocx(markdownContent, outputPath, options = {}) {
@@ -125,11 +153,15 @@ export async function markdownToDocx(markdownContent, outputPath, options = {}) 
   // 使用markdownToHtml函数获取HTML内容
   const finalHtml = await markdownToHtml(markdownContent);
   
-  // 如果选择生成HTML文件，则输出HTML文件
-  if (generateHtml) {
-    const htmlOutputPath = outputPath.replace(/\.docx$/i, '.html');
-    fs.writeFileSync(htmlOutputPath, finalHtml);
-    console.log(`HTML文件已保存为 "${htmlOutputPath}"`);
+  // 如果选择生成HTML文件且在Node环境中，则输出HTML文件
+  if (generateHtml && outputPath && isNode && fs) {
+    try {
+      const htmlOutputPath = outputPath.replace(/\.docx$/i, '.html');
+      fs.writeFileSync(htmlOutputPath, finalHtml);
+      console.log(`HTML文件已保存为 "${htmlOutputPath}"`);
+    } catch (e) {
+      console.error('保存HTML文件失败:', e);
+    }
   }
   
   // 将HTML转换为DOCX
@@ -146,12 +178,19 @@ export async function markdownToDocx(markdownContent, outputPath, options = {}) 
     pageNumber: true,
   });
   
-  // 保存文件
-  fs.writeFileSync(outputPath, docxBuffer);
+  // 如果提供了输出路径且在Node环境中，则保存文件
+  if (outputPath && isNode && fs) {
+    try {
+      fs.writeFileSync(outputPath, docxBuffer);
+    } catch (e) {
+      console.error('保存DOCX文件失败:', e);
+    }
+  }
   
   // 返回docx缓冲区和HTML内容
   return {
     docxBuffer,
     htmlContent: finalHtml
   };
-} 
+}
+ 
