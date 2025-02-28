@@ -13,10 +13,9 @@ const __dirname = path.dirname(__filename);
 /**
  * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的HTML
  * @param {string} markdownContent - Markdown内容
- * @param {string} [outputPath] - 可选，输出的HTML文件路径
  * @returns {Promise<string>} 返回HTML内容
  */
-export async function markdownToHtml(markdownContent, outputPath = null) {
+export async function markdownToHtml(markdownContent) {
   // 读取minireset.css文件
   const miniresetPath = path.join(__dirname, 'lib', 'minireset.css');
   const miniresetCSS = fs.readFileSync(miniresetPath, 'utf-8');
@@ -30,8 +29,6 @@ export async function markdownToHtml(markdownContent, outputPath = null) {
   });
   
   let html = converter.makeHtml(markdownContent);
-  
-  // 第二步：使用JSDOM处理HTML，使其符合中国大陆地区惯用的初始风格
   const dom = new JSDOM(html);
   const document = dom.window.document;
   
@@ -64,7 +61,6 @@ export async function markdownToHtml(markdownContent, outputPath = null) {
     // 创建一个临时容器
     const tempContainer = document.createElement('span');
     tempContainer.style.display = 'block';
-    tempContainer.style.textIndent = '2em';
     tempContainer.innerHTML = content;
     
     // 替换原p元素
@@ -101,39 +97,19 @@ export async function markdownToHtml(markdownContent, outputPath = null) {
   // 将样式转换为内联样式
   const finalHtml = await inlineCss(rawHtml, { url: 'file://' });
   
-  // 如果提供了输出路径，则保存HTML文件
-  if (outputPath) {
-    fs.writeFileSync(outputPath, finalHtml);
-    console.log(`HTML文件已保存为 "${outputPath}"`);
-  }
-  
   return finalHtml;
 }
 
 /**
  * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的Word文档
  * @param {string} markdownContent - Markdown内容
- * @param {string} outputPath - 输出的Word文档路径
  * @param {Object} options - 转换选项
- * @param {boolean} [options.generateHtml=false] - 是否生成HTML文件
- * @returns {Promise<{docxBuffer: Buffer, htmlContent: string}>} 返回docx缓冲区和HTML内容
+ * @param {Object} [options.docxOptions] - Word文档的配置选项
+ * @returns {Promise<Buffer>} 返回docx缓冲区
  */
-export async function markdownToDocx(markdownContent, outputPath, options = {}) {
+export async function markdownToDocx(markdownContent, options = {}) {
   // 设置默认选项
-  const { generateHtml = false } = options;
-  
-  // 使用markdownToHtml函数获取HTML内容
-  const finalHtml = await markdownToHtml(markdownContent);
-  
-  // 如果选择生成HTML文件，则输出HTML文件
-  if (generateHtml) {
-    const htmlOutputPath = outputPath.replace(/\.docx$/i, '.html');
-    fs.writeFileSync(htmlOutputPath, finalHtml);
-    console.log(`HTML文件已保存为 "${htmlOutputPath}"`);
-  }
-  
-  // 将HTML转换为DOCX
-  const docxBuffer = await HTMLtoDOCX(finalHtml, null, {
+  const docxOptions = options.docxOptions || {
     title: 'Converted Document',
     margin: {
       top: 1440,      // 上边距 1 英寸 (1440 缇)
@@ -144,14 +120,35 @@ export async function markdownToDocx(markdownContent, outputPath, options = {}) 
     font: 'SimSun',
     fontSize: 24,
     pageNumber: true,
-  });
+  };
   
-  // 保存文件
-  fs.writeFileSync(outputPath, docxBuffer);
+  // 使用markdownToHtml函数获取HTML内容
+  const finalHtml = await markdownToHtml(markdownContent);
+  
+  // 将HTML转换为DOCX
+  const docxBuffer = await HTMLtoDOCX(finalHtml, null, docxOptions);
+  
+  // 返回docx缓冲区
+  return docxBuffer;
+}
+
+/**
+ * 将Markdown内容转换为HTML和Word文档
+ * @param {string} markdownContent - Markdown内容
+ * @param {Object} options - 转换选项
+ * @param {Object} [options.docxOptions] - Word文档的配置选项
+ * @returns {Promise<{docxBuffer: Buffer, htmlContent: string}>} 返回docx缓冲区和HTML内容
+ */
+export async function markdownToAll(markdownContent, options = {}) {
+  // 使用markdownToHtml函数获取HTML内容
+  const htmlContent = await markdownToHtml(markdownContent);
+  
+  // 使用markdownToDocx函数获取DOCX缓冲区
+  const docxBuffer = await markdownToDocx(markdownContent, options);
   
   // 返回docx缓冲区和HTML内容
   return {
     docxBuffer,
-    htmlContent: finalHtml
+    htmlContent
   };
 } 
