@@ -62,18 +62,25 @@ md-to-cn-word input.md output.docx --html
 
 ```javascript
 import { markdownToDocx } from 'md-to-cn-word';
+import fs from 'fs';
 
-const markdownContent = '# 标题\n\n这是一个段落。';
+const markdownContent = fs.readFileSync('input.md', 'utf-8');
 const outputPath = 'output.docx';
-const options = {
-  generateHtml: false // 设置为true可生成HTML文件用于调试
-};
 
-markdownToDocx(markdownContent, outputPath, options)
-  .then(() => {
-    console.log('转换完成!');
+// 转换Markdown为Word文档
+markdownToDocx(markdownContent, outputPath, { generateHtml: true })
+  .then(result => {
+    console.log('Word文档已生成:', outputPath);
+    
+    // 获取HTML内容
+    const { htmlContent } = result;
+    console.log('HTML内容长度:', htmlContent.length);   
   })
   .catch(err => {
-    console.error('转换失败:', err);
+    console.error('转换过程中发生错误:', err);
   });
 ```
+
+markdownToDocx函数返回一个Promise，解析为包含以下属性的对象：
+- `docxBuffer`: Word文档的Buffer
+- `htmlContent`: 生成的HTML内容字符串

@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
  * @param {string} outputPath - 输出的Word文档路径
  * @param {Object} options - 转换选项
  * @param {boolean} [options.generateHtml=false] - 是否生成HTML文件
- * @returns {Promise<void>}
+ * @returns {Promise<{docxBuffer: Buffer, htmlContent: string}>} 返回docx缓冲区和HTML内容
  */
 export async function markdownToDocx(markdownContent, outputPath, options = {}) {
   // 设置默认选项
@@ -129,4 +129,10 @@ export async function markdownToDocx(markdownContent, outputPath, options = {}) 
   
   // 保存文件
   fs.writeFileSync(outputPath, docxBuffer);
+  
+  // 返回docx缓冲区和HTML内容
+  return {
+    docxBuffer,
+    htmlContent: finalHtml
+  };
 } 

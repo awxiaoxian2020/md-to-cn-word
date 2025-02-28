@@ -55,7 +55,7 @@ if (generateHtml) {
 }
 
 markdownToDocx(markdownContent, outputFile, { generateHtml })
-  .then(() => {
+  .then(result => {
     console.log(`\n✅ 转换完成!`);
     console.log(`📄 Word文档已保存为: "${outputFile}"`);
     if (generateHtml) {
