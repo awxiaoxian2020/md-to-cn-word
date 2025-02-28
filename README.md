@@ -65,7 +65,7 @@ md-to-cn-word input.md --only-html
 md-to-cn-word input.md output.html --only-html
 ```
 
-### 在Node.js中使用
+### 作为模块使用
 
 ```javascript
 import { markdownToDocx, markdownToHtml } from 'md-to-cn-word';
@@ -77,22 +77,17 @@ const markdownContent = fs.readFileSync('input.md', 'utf-8');
 markdownToDocx(markdownContent, 'output.docx', { generateHtml: true })
   .then(result => {
     console.log('Word文档已生成:', 'output.docx');
-    
-    // 获取HTML内容
-    const { htmlContent } = result;
-    console.log('HTML内容长度:', htmlContent.length);
   })
   .catch(err => {
     console.error('转换过程中发生错误:', err);
   });
 
-// 方法2: 只转换Markdown为HTML
+// 方法2: 只转换Markdown为 HTML
 markdownToHtml(markdownContent)
   .then(htmlContent => {
     console.log('HTML内容长度:', htmlContent.length);
     
-    // 可以对HTML内容进行进一步处理
-    // 例如，发送到前端、保存到数据库等
+
   })
   .catch(err => {
     console.error('转换过程中发生错误:', err);
@@ -108,82 +103,8 @@ markdownToHtml(markdownContent, 'output.html')
   });
 ```
 
-### 在浏览器中使用
-
-
-#### 在您自己的扩展项目中使用
-
-##### 方法一：作为依赖引入（推荐）
-
-1. 在您的扩展项目中安装依赖：
-
-```bash
-# 使用npm
-npm install md-to-cn-word --save
-
-# 或使用yarn
-yarn add md-to-cn-word
-
-# 或使用pnpm
-pnpm add md-to-cn-word
-```
-
-2. 构建扩展版本并复制到您的扩展目录：
-
-```bash
-# 在node_modules/md-to-cn-word目录下构建
-cd node_modules/md-to-cn-word
-npm run build:extension
-
-# 复制构建好的文件到您的扩展目录
-mkdir -p ../../extension/lib
-cp dist/md-to-cn-word.extension.min.js ../../extension/lib/
-```
-
-3. 在您的扩展的manifest.json中声明为web accessible resource：
-
-```json
-"web_accessible_resources": [
-  {
-    "resources": ["lib/md-to-cn-word.extension.min.js"],
-    "matches": ["<all_urls>"]
-  }
-]
-```
-
-4. 在您的扩展的JavaScript文件中导入和使用：
-
-```javascript
-// 方法1：使用import导入（推荐）
-import mdToCnWord from './lib/md-to-cn-word.extension.min.js';
-
-// 方法2：动态导入
-const src = chrome.runtime.getURL('lib/md-to-cn-word.extension.min.js');
-const module = await import(src);
-const mdToCnWord = module.default;
-
-// 使用便捷方法
-// 1. 转换为HTML
-const htmlContent = await mdToCnWord.convertToHtml(markdownContent);
-
-// 2. 转换为Word并下载
-await mdToCnWord.convertToDocxAndDownload(markdownContent, 'document.docx');
-
-// 3. 渲染到DOM元素
-await mdToCnWord.renderMarkdown(markdownContent, '#preview');
-```
-
-
-在浏览器扩展中使用时：
-- 不支持文件系统操作，因此`outputPath`参数将被忽略
-- 返回的`docxBuffer`是一个ArrayBuffer，可以用于创建Blob对象并提供下载
-- 使用扩展版本提供的便捷方法可以简化常见操作
-- 对于需要频繁转换的场景，考虑使用Web Worker以避免阻塞UI线程
-- 如果您的扩展需要处理大量Markdown，建议在后台脚本中进行处理
-- 注意跨域资源访问限制，特别是在内容脚本中使用时
-
 markdownToDocx函数返回一个Promise，解析为包含以下属性的对象：
-- `docxBuffer`: Word文档的Buffer（在浏览器中是ArrayBuffer）
+- `docxBuffer`: Word文档的Buffer
 - `htmlContent`: 生成的HTML内容字符串
 
 markdownToHtml函数返回一个Promise，解析为HTML内容字符串。
