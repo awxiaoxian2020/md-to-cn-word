@@ -1,0 +1,32 @@
+{
+  "name": "md-to-cn-word",
+  "version": "0.0.2",
+  "description": "将Markdown转换为符合中国大陆地区惯用的初始风格的Word文档",
+  "main": "src/module.js",
+  "type": "module",
+  "bin": {
+    "md-to-cn-word": "./src/index.js"
+  },
+  "exports": {
+    ".": "./src/module.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "markdown",
+    "docx",
+    "converter",
+    "chinese-style"
+  ],
+  "author": "Xavi Lee",
+  "homepage": "https://github.com/awxiaoxian2020/md-to-cn-word",
+  "license": "LGPL-3.0-or-later",
+  "packageManager": "pnpm@10.2.0+sha512.0d27364e0139c6aadeed65ada153135e0ca96c8da42123bd50047f961339dc7a758fc2e944b428f52be570d1bd3372455c1c65fa2e7aa0bfbf931190f9552001",
+  "dependencies": {
+    "html-to-docx": "^1.8.0",
+    "inline-css": "^4.0.3",
+    "jsdom": "^26.0.0",
+    "showdown": "^2.1.0"
+  }
+}
