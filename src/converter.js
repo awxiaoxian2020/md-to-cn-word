@@ -11,17 +11,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的Word文档
+ * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的HTML
  * @param {string} markdownContent - Markdown内容
- * @param {string} outputPath - 输出的Word文档路径
- * @param {Object} options - 转换选项
- * @param {boolean} [options.generateHtml=false] - 是否生成HTML文件
- * @returns {Promise<{docxBuffer: Buffer, htmlContent: string}>} 返回docx缓冲区和HTML内容
+ * @param {string} [outputPath] - 可选，输出的HTML文件路径
+ * @returns {Promise<string>} 返回HTML内容
  */
-export async function markdownToDocx(markdownContent, outputPath, options = {}) {
-  // 设置默认选项
-  const { generateHtml = false } = options;
-  
+export async function markdownToHtml(markdownContent, outputPath = null) {
   // 读取minireset.css文件
   const miniresetPath = path.join(__dirname, 'lib', 'minireset.css');
   const miniresetCSS = fs.readFileSync(miniresetPath, 'utf-8');
@@ -106,6 +101,30 @@ export async function markdownToDocx(markdownContent, outputPath, options = {}) 
   // 将样式转换为内联样式
   const finalHtml = await inlineCss(rawHtml, { url: 'file://' });
   
+  // 如果提供了输出路径，则保存HTML文件
+  if (outputPath) {
+    fs.writeFileSync(outputPath, finalHtml);
+    console.log(`HTML文件已保存为 "${outputPath}"`);
+  }
+  
+  return finalHtml;
+}
+
+/**
+ * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的Word文档
+ * @param {string} markdownContent - Markdown内容
+ * @param {string} outputPath - 输出的Word文档路径
+ * @param {Object} options - 转换选项
+ * @param {boolean} [options.generateHtml=false] - 是否生成HTML文件
+ * @returns {Promise<{docxBuffer: Buffer, htmlContent: string}>} 返回docx缓冲区和HTML内容
+ */
+export async function markdownToDocx(markdownContent, outputPath, options = {}) {
+  // 设置默认选项
+  const { generateHtml = false } = options;
+  
+  // 使用markdownToHtml函数获取HTML内容
+  const finalHtml = await markdownToHtml(markdownContent);
+  
   // 如果选择生成HTML文件，则输出HTML文件
   if (generateHtml) {
     const htmlOutputPath = outputPath.replace(/\.docx$/i, '.html');
@@ -113,7 +132,7 @@ export async function markdownToDocx(markdownContent, outputPath, options = {}) 
     console.log(`HTML文件已保存为 "${htmlOutputPath}"`);
   }
   
-  // 第三步：将HTML转换为DOCX
+  // 将HTML转换为DOCX
   const docxBuffer = await HTMLtoDOCX(finalHtml, null, {
     title: 'Converted Document',
     margin: {
