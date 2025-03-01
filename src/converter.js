@@ -147,7 +147,7 @@ export async function markdownToHtml(markdownContent) {
   `;
   
   // 将样式转换为内联样式
-  const finalHtml = await inlineCss(rawHtml, { url: '' });
+  const finalHtml = await inlineCss(rawHtml, { url: 'filePath' });
   
   return finalHtml;
 }
