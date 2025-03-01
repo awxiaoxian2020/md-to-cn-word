@@ -1,14 +1,77 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import showdown from 'showdown';
-import { JSDOM } from 'jsdom';
+import cheerio from 'cheerio';
 import HTMLtoDOCX from 'html-to-docx';
 import inlineCss from 'inline-css';
 
-// 获取当前文件的目录路径
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 内联 minireset.css 内容，避免使用文件系统
+const miniresetCSS = `/*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */
+/* modified by Xavi Lee */
+html,
+body,
+p,
+ol,
+ul,
+li,
+dl,
+dt,
+dd,
+blockquote,
+figure,
+fieldset,
+legend,
+textarea,
+pre,
+iframe,
+hr,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    padding: 0
+}
+
+ul {
+    list-style: none
+}
+
+button,
+input,
+select {
+    margin: 0
+}
+
+html {
+    box-sizing: border-box
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit
+}
+
+img,
+video {
+    height: auto;
+    max-width: 100%
+}
+
+iframe {
+    border: 0
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0
+}
+
+td,
+th {
+    padding: 0
+}`;
 
 /**
  * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的HTML
@@ -16,10 +79,6 @@ const __dirname = path.dirname(__filename);
  * @returns {Promise<string>} 返回HTML内容
  */
 export async function markdownToHtml(markdownContent) {
-  // 读取minireset.css文件
-  const miniresetPath = path.join(__dirname, 'lib', 'minireset.css');
-  const miniresetCSS = fs.readFileSync(miniresetPath, 'utf-8');
-  
   // 第一步：将Markdown转换为HTML
   const converter = new showdown.Converter({
     tables: true,
@@ -29,54 +88,47 @@ export async function markdownToHtml(markdownContent) {
   });
   
   let html = converter.makeHtml(markdownContent);
-  const dom = new JSDOM(html);
-  const document = dom.window.document;
+  
+  // 使用cheerio加载HTML
+  const $ = cheerio.load(html);
   
   // 处理标题：将h1到h6标签都变成加粗文本，删除原有标签，不添加换行
-  const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-  for (const heading of headings) {
+  $('h1, h2, h3, h4, h5, h6').each(function() {
     // 获取标题内容
-    const content = heading.textContent;
+    const content = $(this).text();
     
     // 创建加粗元素
-    const bold = document.createElement('strong');
-    bold.textContent = content;
+    const bold = $('<strong></strong>').text(content);
     
     // 直接替换原标题元素
-    heading.parentNode.replaceChild(bold, heading);
-  }
+    $(this).replaceWith(bold);
+  });
   
   // 处理段落：完全删除p标签，保留内容
-  const paragraphs = Array.from(document.querySelectorAll('p'));
-  for (const p of paragraphs) {
+  $('p').each(function() {
     // 跳过特殊段落（如在列表、引用等内部的段落）
-    if (p.parentElement.tagName === 'LI' || 
-        p.parentElement.tagName === 'BLOCKQUOTE') {
-      continue;
+    if ($(this).parent().is('li') || $(this).parent().is('blockquote')) {
+      return;
     }
     
     // 获取段落内容的HTML字符串
-    const content = p.innerHTML;
+    const content = $(this).html();
     
     // 创建一个临时容器
-    const tempContainer = document.createElement('span');
-    tempContainer.style.display = 'block';
-    tempContainer.innerHTML = content;
+    const tempContainer = $('<span></span>').css('display', 'block').html(content);
     
     // 替换原p元素
-    p.parentNode.replaceChild(tempContainer, p);
-  }
+    $(this).replaceWith(tempContainer);
+  });
   
   // 处理无序列表：将无序列表转换为有序列表
-  const unorderedLists = Array.from(document.querySelectorAll('ul'));
-  for (const ul of unorderedLists) {
-    const ol = document.createElement('ol');
-    ol.innerHTML = ul.innerHTML;
-    ul.parentNode.replaceChild(ol, ul);
-  }
+  $('ul').each(function() {
+    const ol = $('<ol></ol>').html($(this).html());
+    $(this).replaceWith(ol);
+  });
   
   // 获取处理后的HTML
-  html = document.body.innerHTML;
+  html = $('body').html();
   
   // 添加一些基本样式，包括minireset.css
   const rawHtml = `
@@ -95,7 +147,7 @@ export async function markdownToHtml(markdownContent) {
   `;
   
   // 将样式转换为内联样式
-  const finalHtml = await inlineCss(rawHtml, { url: 'file://' });
+  const finalHtml = await inlineCss(rawHtml);
   
   return finalHtml;
 }
