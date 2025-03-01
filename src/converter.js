@@ -1,5 +1,5 @@
 import showdown from 'showdown';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import HTMLtoDOCX from 'html-to-docx';
 import inlineCss from 'inline-css';
 
@@ -147,7 +147,7 @@ export async function markdownToHtml(markdownContent) {
   `;
   
   // 将样式转换为内联样式
-  const finalHtml = await inlineCss(rawHtml);
+  const finalHtml = await inlineCss(rawHtml, { url: '' });
   
   return finalHtml;
 }
