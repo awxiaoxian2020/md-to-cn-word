@@ -5,7 +5,10 @@
   "main": "src/module.js",
   "type": "module",
   "exports": {
-    ".": "./src/module.js"
+    ".": {
+      "import": "./src/module.js",
+      "browser": "./src/module.js"
+    }
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,9 +25,12 @@
   "license": "LGPL-3.0-or-later",
   "packageManager": "pnpm@10.2.0+sha512.0d27364e0139c6aadeed65ada153135e0ca96c8da42123bd50047f961339dc7a758fc2e944b428f52be570d1bd3372455c1c65fa2e7aa0bfbf931190f9552001",
   "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
     "html-to-docx": "^1.8.0",
     "inline-css": "^4.0.3",
-    "jsdom": "^26.0.0",
     "showdown": "^2.1.0"
+  },
+  "browser": {
+    "./src/module.js": "./src/module.js"
   }
 }
