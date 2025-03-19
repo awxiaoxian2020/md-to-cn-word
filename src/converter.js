@@ -1,77 +1,7 @@
 import showdown from 'showdown';
 import * as cheerio from 'cheerio';
 import HTMLtoDOCX from 'html-to-docx';
-import inlineCss from 'inline-css';
 
-// 内联 minireset.css 内容，避免使用文件系统
-const miniresetCSS = `/*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */
-/* modified by Xavi Lee */
-html,
-body,
-p,
-ol,
-ul,
-li,
-dl,
-dt,
-dd,
-blockquote,
-figure,
-fieldset,
-legend,
-textarea,
-pre,
-iframe,
-hr,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    margin: 0;
-    padding: 0
-}
-
-ul {
-    list-style: none
-}
-
-button,
-input,
-select {
-    margin: 0
-}
-
-html {
-    box-sizing: border-box
-}
-
-*,
-*::before,
-*::after {
-    box-sizing: inherit
-}
-
-img,
-video {
-    height: auto;
-    max-width: 100%
-}
-
-iframe {
-    border: 0
-}
-
-table {
-    border-collapse: collapse;
-    border-spacing: 0
-}
-
-td,
-th {
-    padding: 0
-}`;
 
 /**
  * 将Markdown内容转换为符合中国大陆地区惯用的初始风格的HTML
@@ -126,28 +56,47 @@ export async function markdownToHtml(markdownContent) {
     const ol = $('<ol></ol>').html($(this).html());
     $(this).replaceWith(ol);
   });
+
+  // 应用内联样式
+  $('body').css({
+    'font-family': 'SimSun, serif',
+    'line-height': '22pt',
+    'margin': '0',
+    'padding': '0'
+  });
+
+  // 应用 minireset 样式
+  $('html, body, p, ol, ul, li, dl, dt, dd, blockquote, figure, fieldset, legend, textarea, pre, iframe, hr, h1, h2, h3, h4, h5, h6').css({
+    'margin': '0',
+    'padding': '0'
+  });
+
+  $('ul').css('list-style', 'none');
+  $('button, input, select').css('margin', '0');
+  $('img, video').css({
+    'height': 'auto',
+    'max-width': '100%'
+  });
+  $('iframe').css('border', '0');
+  $('table').css({
+    'border-collapse': 'collapse',
+    'border-spacing': '0'
+  });
+  $('td, th').css('padding', '0');
   
   // 获取处理后的HTML
   html = $('body').html();
   
-  // 添加一些基本样式，包括minireset.css
-  const rawHtml = `
+  // 构建最终的HTML文档
+  const finalHtml = `
     <html>
       <head>
         <meta charset="UTF-8">
         <title>转换文档</title>
-        <style>
-          ${miniresetCSS}
-          /* 自定义样式 */
-          body { font-family: SimSun, serif; line-height: 22pt; }
-        </style>
       </head>
       <body>${html}</body>
     </html>
   `;
-  
-  // 将样式转换为内联样式
-  const finalHtml = await inlineCss(rawHtml, { url: 'filePath' });
   
   return finalHtml;
 }

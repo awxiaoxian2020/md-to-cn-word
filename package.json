@@ -2,16 +2,19 @@
   "name": "md-to-cn-word",
   "version": "0.2.2",
   "description": "将Markdown转换为符合中国大陆地区惯用的初始风格的Word文档的库",
-  "main": "src/module.js",
+  "main": "dist/md-to-cn-word.umd.js",
+  "module": "dist/md-to-cn-word.esm.js",
   "type": "module",
   "exports": {
     ".": {
-      "import": "./src/module.js",
-      "browser": "./src/module.js"
+      "import": "./dist/md-to-cn-word.esm.js",
+      "browser": "./dist/md-to-cn-word.umd.js"
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
   },
   "keywords": [
     "markdown",
@@ -31,6 +34,12 @@
     "showdown": "^2.1.0"
   },
   "browser": {
-    "./src/module.js": "./src/module.js"
+    "./dist/md-to-cn-word.umd.js": "./dist/md-to-cn-word.umd.js"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.36.0"
   }
 }
