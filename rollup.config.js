@@ -1,6 +1,8 @@
-import resolve from '@rollup/plugin-node-resolve';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
+import nodePolyfills from 'rollup-plugin-node-polyfills';
 
 export default {
   input: 'src/module.js',
@@ -8,19 +10,30 @@ export default {
     {
       file: 'dist/md-to-cn-word.esm.js',
       format: 'es',
-      sourcemap: true
+      sourcemap: true,
+      exports: 'named',
     },
     {
       file: 'dist/md-to-cn-word.umd.js',
       format: 'umd',
       name: 'MdToCnWord',
-      sourcemap: true
+      sourcemap: true,
+    },
+    {
+      file: 'dist/md-to-cn-word.min.js',
+      format: 'umd',
+      name: 'MdToCnWord',
+      plugins: [terser()],
+      sourcemap: true,
     }
   ],
   plugins: [
-    resolve(),
+    nodeResolve({
+      browser: true,
+      preferBuiltins: false
+    }),
     commonjs(),
-    terser()
+    json(),
+    nodePolyfills()
   ],
-  external: ['cheerio', 'html-to-docx', 'showdown']
-}; 
+} 
