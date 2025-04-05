@@ -3,6 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
 import nodePolyfills from 'rollup-plugin-node-polyfills';
+import builtins from 'rollup-plugin-node-builtins';
 
 export default {
   input: 'src/module.js',
@@ -34,6 +35,7 @@ export default {
     }),
     commonjs(),
     json(),
-    nodePolyfills()
+    nodePolyfills(),
+    builtins()
   ],
 } 
