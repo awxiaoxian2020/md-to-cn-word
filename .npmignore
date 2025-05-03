@@ -1,0 +1,19 @@
+# 版本控制
+.git/
+.gitignore
+.github/
+
+# 测试文件
+test/
+
+# 其他文件
+node_modules/
+.vscode/
+.idea/
+*.log
+pnpm-lock.yaml
+
+# 开发相关
+.editorconfig
+.eslintrc
+.prettierrc 

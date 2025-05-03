@@ -3,20 +3,20 @@
   "version": "0.3.1",
   "description": "将Markdown转换为符合中国大陆地区惯用的初始风格的Word文档的库",
   "type": "module",
-  "main": "dist/md-to-cn-word.umd.js",
-  "module": "dist/md-to-cn-word.esm.js",
+  "main": "./src/module.js",
   "exports": {
-    "import": "./dist/md-to-cn-word.esm.js",
-    "require": "./dist/md-to-cn-word.umd.js",
-    "default": "./dist/md-to-cn-word.esm.js"
+    ".": "./src/module.js"
   },
+  "types": "./types/index.d.ts",
   "files": [
-    "dist"
+    "src",
+    "types",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c",
-    "dev": "rollup -c -w"
+    "test": "node test/test.js",
+    "build": "mkdir -p dist && cp -r src/* dist/"
   },
   "keywords": [
     "markdown",
@@ -27,6 +27,13 @@
   ],
   "author": "Xavi Lee",
   "homepage": "https://github.com/awxiaoxian2020/md-to-cn-word",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awxiaoxian2020/md-to-cn-word.git"
+  },
+  "bugs": {
+    "url": "https://github.com/awxiaoxian2020/md-to-cn-word/issues"
+  },
   "license": "LGPL-3.0-or-later",
   "packageManager": "pnpm@10.2.0+sha512.0d27364e0139c6aadeed65ada153135e0ca96c8da42123bd50047f961339dc7a758fc2e944b428f52be570d1bd3372455c1c65fa2e7aa0bfbf931190f9552001",
   "dependencies": {
@@ -34,14 +41,5 @@
     "html-to-docx": "^1.8.0",
     "inline-css": "^4.0.3",
     "showdown": "^2.1.0"
-  },
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.3",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-terser": "^0.4.4",
-    "rollup": "^4.36.0",
-    "rollup-plugin-node-polyfills": "^0.2.1",
-    "rollup-plugin-node-builtins": "^2.1.2"
   }
 }

@@ -1,14 +1,13 @@
 # md-to-cn-word
 
-将Markdown转换为符合中国大陆地区惯用的初始风格的Word文档的库
+将Markdown转换为符合中国大陆地区惯用的初始风格的Word文档的库。
 
-## 特点
+## 功能特点
 
-- 将Markdown内容转换为Word文档
-- 转换结果符合中国大陆地区的排版习惯
-- 支持转换为HTML或直接转换为Word文档
-- 同时支持Node.js环境和浏览器环境（包括油猴脚本）
-- 油猴脚本环境下已内置所有依赖，无需额外引入
+- 将Markdown转换为符合中国大陆地区惯用的初始风格的HTML
+- 将Markdown转换为符合中国大陆地区惯用的初始风格的Word文档
+- 自定义文档格式（字体、字号、边距等）
+- 支持CommonJS和ES模块
 
 ## 安装
 
@@ -25,117 +24,125 @@ pnpm add md-to-cn-word
 
 ## 使用方法
 
-### 在Node.js中使用（ESM）
+### 基本用法
 
 ```javascript
-// ESM方式导入
-import { markdownToDocx, markdownToHtml, markdownToAll } from 'md-to-cn-word';
+import { markdownToDocx } from 'md-to-cn-word';
 import fs from 'fs';
 
-// 读取Markdown内容
-const markdownContent = fs.readFileSync('example.md', 'utf-8');
+// Markdown内容
+const markdownContent = `
+# 标题
+
+这是一段文本。
+
+- 列表项1
+- 列表项2
+`;
 
 // 转换为Word文档
-const docxBuffer = await markdownToDocx(markdownContent);
-fs.writeFileSync('output.docx', docxBuffer);
-
-// 转换为HTML
-const htmlContent = await markdownToHtml(markdownContent);
-fs.writeFileSync('output.html', htmlContent);
-
-// 同时获取Word和HTML
-const { docxBuffer, htmlContent } = await markdownToAll(markdownContent);
-```
-
-### 在Node.js中使用（CommonJS）
-
-```javascript
-// CommonJS方式导入
-const { markdownToDocx, markdownToHtml, markdownToAll } = require('md-to-cn-word');
-const fs = require('fs');
-
-// 读取Markdown内容
-const markdownContent = fs.readFileSync('example.md', 'utf-8');
-
-// 转换为Word文档
-async function convert() {
+(async () => {
   const docxBuffer = await markdownToDocx(markdownContent);
+  
+  // 保存Word文档
   fs.writeFileSync('output.docx', docxBuffer);
-}
-
-convert();
-```
-
-### 在油猴脚本中使用
-
-```javascript
-// ==UserScript==
-// @name         Markdown to Chinese Word Converter
-// @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  将网页上的Markdown内容转换为符合中国习惯的Word文档
-// @author       You
-// @match        *://*/*
-// @grant        GM_download
-// @require      https://cdn.jsdelivr.net/npm/md-to-cn-word@0.2.3/dist/md-to-cn-word.min.js
-// ==/UserScript==
-
-(function() {
-  'use strict';
-  
-  // 使用MdToCnWord库转换内容
-  const markdownContent = "# 标题\n\n这是一段Markdown内容";
-  const docxBuffer = await MdToCnWord.markdownToDocx(markdownContent);
-  
-  // 将Buffer转换为Blob
-  const blob = new Blob([docxBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  
-  // 使用GM_download下载文件
-  GM_download({
-    url: URL.createObjectURL(blob),
-    name: '转换文档.docx',
-    saveAs: true
-  });
 })();
 ```
 
-## API参考
+### 高级用法
+
+```javascript
+import { markdownToDocx, markdownToHtml, markdownToAll } from 'md-to-cn-word';
+import fs from 'fs';
+
+// Markdown内容
+const markdownContent = `
+# 标题
+
+这是一段文本。
+
+- 列表项1
+- 列表项2
+`;
+
+// 自定义选项
+const options = {
+  docxOptions: {
+    title: '我的文档',
+    margin: {
+      top: 1440,    // 上边距1英寸
+      right: 1440,  // 右边距1英寸
+      bottom: 1440, // 下边距1英寸
+      left: 1440,   // 左边距1英寸
+    },
+    font: 'SimSun', // 宋体
+    fontSize: 24,   // 小四号字体（24磅）
+    pageNumber: true, // 添加页码
+  }
+};
+
+// 转换为Word文档
+(async () => {
+  // 转换为Word文档
+  const docxBuffer = await markdownToDocx(markdownContent, options);
+  fs.writeFileSync('output.docx', docxBuffer);
+  
+  // 转换为HTML
+  const htmlContent = await markdownToHtml(markdownContent);
+  fs.writeFileSync('output.html', htmlContent);
+  
+  // 同时获取Word文档和HTML
+  const { docxBuffer: docx, htmlContent: html } = await markdownToAll(markdownContent, options);
+  fs.writeFileSync('output2.docx', docx);
+  fs.writeFileSync('output2.html', html);
+})();
+```
+
+## API
 
 ### markdownToHtml(markdownContent)
 
-将Markdown内容转换为HTML。
+将Markdown内容转换为符合中国大陆地区惯用的初始风格的HTML。
 
-参数:
-- `markdownContent` (String): Markdown文本内容
+**参数：**
+- `markdownContent` {string} - Markdown内容
 
-返回:
-- Promise<String>: 返回HTML内容
+**返回值：**
+- `Promise<string>` - 返回HTML内容
 
 ### markdownToDocx(markdownContent, options)
 
-将Markdown内容转换为Word文档。
+将Markdown内容转换为符合中国大陆地区惯用的初始风格的Word文档。
 
-参数:
-- `markdownContent` (String): Markdown文本内容
-- `options` (Object, 可选): 转换选项
-  - `docxOptions` (Object, 可选): Word文档的配置选项
+**参数：**
+- `markdownContent` {string} - Markdown内容
+- `options` {Object} - 可选，转换选项
+  - `docxOptions` {Object} - Word文档的配置选项
+    - `title` {string} - 文档标题
+    - `margin` {Object} - 文档边距
+      - `top` {number} - 上边距（缇）
+      - `right` {number} - 右边距（缇）
+      - `bottom` {number} - 下边距（缇）
+      - `left` {number} - 左边距（缇）
+    - `font` {string} - 字体
+    - `fontSize` {number} - 字号（磅）
+    - `pageNumber` {boolean} - 是否添加页码
 
-返回:
-- Promise<Buffer>: 返回docx文档缓冲区
+**返回值：**
+- `Promise<Buffer>` - 返回docx缓冲区
 
 ### markdownToAll(markdownContent, options)
 
-同时将Markdown内容转换为HTML和Word文档。
+将Markdown内容转换为HTML和Word文档。
 
-参数:
-- `markdownContent` (String): Markdown文本内容
-- `options` (Object, 可选): 转换选项
-  - `docxOptions` (Object, 可选): Word文档的配置选项
+**参数：**
+- `markdownContent` {string} - Markdown内容
+- `options` {Object} - 可选，转换选项，与markdownToDocx相同
 
-返回:
-- Promise<Object>: 
-  - `docxBuffer` (Buffer): Word文档缓冲区
-  - `htmlContent` (String): HTML内容
+**返回值：**
+- `Promise<Object>` - 返回包含以下属性的对象
+  - `docxBuffer` {Buffer} - Word文档缓冲区
+  - `htmlContent` {string} - HTML内容
 
 ## 许可证
 
